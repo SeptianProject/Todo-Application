@@ -54,6 +54,8 @@ class _QRadioButtonState extends State<QRadioButton> {
                       });
                       if (widget.onChanged != null) {
                         widget.onChanged!(value);
+                      } else if (widget.onChanged == null) {
+                        widget.onChanged!(value);
                       }
                     });
               },

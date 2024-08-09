@@ -29,6 +29,7 @@ class RegisterController extends State<RegisterView> {
   String? username;
   String? email;
   String? password;
+  String? imagePath;
 
   doRegister() async {
     try {
@@ -36,10 +37,15 @@ class RegisterController extends State<RegisterView> {
         email: email!,
         password: password!,
       );
+
+      await userCredential.user!.updateProfile(displayName: username);
+
       await firestore.collection("users").doc(userCredential.user!.uid).set({
-        "username": userCredential.user!.displayName,
+        "username": username,
         "email": email,
+        "photoUrl": imagePath ?? "",
       });
+
       Get.offAll(const DashboardView());
       showSnackBar("Akun Berhasil Didaftarkan");
     } catch (e) {

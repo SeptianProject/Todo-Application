@@ -19,7 +19,7 @@ class TodoFormView extends StatefulWidget {
             children: [
               QTextField(
                   label: "Input Task",
-                  validator: Validator.field,
+                  validator: Validator.email,
                   onChanged: (value) {
                     controller.title = value;
                   },
@@ -43,12 +43,15 @@ class TodoFormView extends StatefulWidget {
                   }
                 ],
                 onChanged: (value) {
+                  if (value == null) {
+                    controller.status = "Pending";
+                  }
                   controller.status = value;
                 },
               ),
               const SizedBox(height: 20),
               QButton(
-                  onPressed: () => controller.doSave(),
+                  onPressed: () => controller.createTask(),
                   child: const Text("Save"))
             ],
           ),

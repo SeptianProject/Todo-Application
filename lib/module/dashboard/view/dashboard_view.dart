@@ -55,7 +55,9 @@ class DashboardView extends StatefulWidget {
                   ),
                 )),
             const SizedBox(height: 20),
-            QButton(onPressed: () => controller.tap(), child: Text("Tap")),
+            QButton(
+                onPressed: () => controller.tap(),
+                child: const Text("Get Image")),
             // Text(FirebaseStorage.instance.app.name.length.toString()),
             const SizedBox(height: 20),
             Expanded(

@@ -26,14 +26,14 @@ class TodoFormController extends State<TodoFormView> {
   String? title;
   String? status;
 
-  doSave() async {
+  createTask() async {
     await FirebaseFirestore.instance.collection("todos").add({
       "title": title,
       "status": status,
       "created_at": Timestamp.now(),
       "user": {
         "uid": FirebaseAuth.instance.currentUser!.uid,
-        "username": FirebaseAuth.instance.currentUser!.displayName,
+        // "username": FirebaseAuth.instance.currentUser!.displayName,
         "email": FirebaseAuth.instance.currentUser!.email,
       }
     });

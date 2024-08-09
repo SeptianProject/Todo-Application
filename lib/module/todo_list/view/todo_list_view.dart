@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_app/core.dart';
@@ -19,14 +20,20 @@ class TodoListView extends StatefulWidget {
         child: Column(
           children: [
             StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance.collection("todos").snapshots(),
+              // stream:
+              //     FirebaseFirestore.instance.collection("todos").snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection("todos")
+                  .where("user.uid",
+                      isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) return const Text("Error");
                 if (snapshot.data == null) return Container();
                 if (snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No Data"));
+                  return const Center(child: Text("Task not found"));
                 }
+
                 final data = snapshot.data!;
                 return ListView.builder(
                   shrinkWrap: true,
@@ -35,8 +42,9 @@ class TodoListView extends StatefulWidget {
                     Map<String, dynamic> item =
                         (data.docs[index].data() as Map<String, dynamic>);
                     item["id"] = data.docs[index].id;
-                    var createAt = item["created_at"];
-                    var date = (createAt as Timestamp).toDate();
+
+                    var createdAt = item["created_at"] as Timestamp;
+                    var date = createdAt.toDate();
                     var hourFormat = DateFormat("H.m").format(date);
                     var dayFormat = DateFormat().add_EEEE().format(date);
 
@@ -53,10 +61,10 @@ class TodoListView extends StatefulWidget {
                       child: Card(
                         child: ListTile(
                           onTap: () => controller.updateTodo(item),
-                          title: Text(item["title"]),
+                          title: Text(item["title"] ?? "Belum Diisi"),
                           subtitle: Text("Waktu : $hourFormat - $dayFormat"),
                           trailing: Text(
-                            item["status"],
+                            item["status"] ?? "Pending",
                             style: TextStyle(
                                 color: color,
                                 fontSize: 15,

@@ -26,8 +26,10 @@ class TodoListController extends State<TodoListView> {
   int selectedIndex = 0;
 
   updateTodo(Map<String, dynamic> item) async {
+    var title = item["title"];
+    title ??= "Belum diisi";
     var status = item["status"];
-    if (status == "Pending") {
+    if (status == "Pending" || status == null) {
       status = "Ongoing";
     } else if (status == "Ongoing") {
       status = "Done";
@@ -38,6 +40,7 @@ class TodoListController extends State<TodoListView> {
         .collection("todos")
         .doc(item["id"])
         .update({
+      "title": title,
       "status": status,
     });
   }

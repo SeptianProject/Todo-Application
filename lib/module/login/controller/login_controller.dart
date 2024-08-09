@@ -35,11 +35,18 @@ class LoginController extends State<LoginView> {
     try {
       final UserCredential userCredential = await auth
           .signInWithEmailAndPassword(email: email!, password: password!);
-      await firestore.collection("users").doc(userCredential.user!.uid).set({
-        "username": userCredential.user!.displayName,
-        "email": userCredential.user!.email,
-      });
-      Get.offAll(const DashboardView());
+
+      DocumentSnapshot userSnapshot = await firestore
+          .collection("users")
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userSnapshot.exists) {
+        Get.offAll(const DashboardView());
+      } else {
+        Get.offAll(const DashboardView());
+      }
+
       showSnackBar("Akun Berhasil Login");
     } catch (err) {
       showSnackBar("Email atau password salah");
@@ -67,8 +74,24 @@ class LoginController extends State<LoginView> {
       );
       var userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
-      debugPrint("userCredential: $userCredential");
-      Get.offAll(const DashboardView());
+
+      DocumentSnapshot userSnapshot = await firestore
+          .collection("users")
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userSnapshot.exists) {
+        Get.offAll(const DashboardView());
+      } else {
+        await firestore.collection("users").doc(userCredential.user!.uid).set({
+          "username": userCredential.user!.displayName,
+          "email": userCredential.user!.email,
+          "photoUrl": userCredential.user!.photoURL,
+        });
+        Get.offAll(const DashboardView());
+      }
+
+      log("userCredential: $userCredential");
     } catch (err) {
       showSnackBar("Akun Google sudah digunakan");
     }

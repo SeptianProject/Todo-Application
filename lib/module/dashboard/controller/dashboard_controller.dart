@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path/path.dart';
 import 'dart:developer';
 import 'dart:io';
@@ -32,28 +33,23 @@ class DashboardController extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) => widget.build(context, this);
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   int selectedIndex = 1;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   File? image;
   String? imagePath;
   List<String> imageUrls = [];
 
-  doLogout() async {
-    await showAlertDialog(
-      "Logout",
-      "Apakah anda yakin ingin Logout wok?",
-      () => Get.offAll(const LoginView()),
-    );
-  }
-
   Future<void> uploadImage(File imageFile) async {
     try {
-      String fileName = basename(imageFile.path);
+      String email = FirebaseAuth.instance.currentUser!.email!;
+      String fileName = '$email/${basename(imageFile.path)}';
       Reference ref = FirebaseStorage.instance.ref().child(fileName);
       UploadTask task = ref.putFile(imageFile);
       TaskSnapshot snapshot = await task;
       String imageUrl = await snapshot.ref.getDownloadURL();
       log("Download Url :  $imageUrl");
+
+      await FirebaseAuth.instance.currentUser!.updatePhotoURL(imageUrl);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('upload_image_url', imageUrl);
@@ -61,6 +57,8 @@ class DashboardController extends State<DashboardView> {
       setState(() {
         imagePath = imageUrl;
       });
+
+      showSnackBar("Gambar berhasil diupload");
       log(imageUrl.length.toString());
     } catch (e) {
       showSnackBar("Gagal mengupload gambar");
@@ -69,14 +67,21 @@ class DashboardController extends State<DashboardView> {
 
   Future<void> tap() async {
     try {
-      final ListResult result = await FirebaseStorage.instance.ref().listAll();
+      String email = FirebaseAuth.instance.currentUser!.email!;
+      String path = '$email/';
+
+      final ListResult result =
+          await FirebaseStorage.instance.ref().child(path).listAll();
+
       final List<String> urls = await Future.wait(result.items.map((ref) async {
         return await ref.getDownloadURL();
       }));
+
       setState(() {
         imageUrls = urls;
         log(imageUrls.length.toString());
       });
+      showSnackBar("Berhasil mengambil gambar");
     } catch (e) {
       showSnackBar("Gagal mengambil gambar");
     }
@@ -85,7 +90,7 @@ class DashboardController extends State<DashboardView> {
   Future<void> loadImage() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      imagePath = prefs.getString('upload_image_url');
+      imagePath = prefs.getString('upload_image_url') ?? " ";
     });
   }
 
@@ -103,6 +108,14 @@ class DashboardController extends State<DashboardView> {
     } catch (e) {
       showSnackBar("Gagal mengambil gambar");
     }
+  }
+
+  doLogout() async {
+    await showAlertDialog(
+      "Logout",
+      "Apakah anda yakin ingin Logout wok?",
+      () => Get.offAll(const LoginView()),
+    );
   }
 
   // Future getImage() async {
