@@ -1,4 +1,4 @@
-# todo_app
+# todo_app by Septianzz
 
 A new Flutter project.
 
